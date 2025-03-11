@@ -22,6 +22,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
+      
+      - name: Clean up before build  # 🛠 追加する部分
+        run: rm -rf frontend/.next  # GitHubでクリーンにする
 
       - name: Install dependencies, build, and test
         working-directory: frontend  # ✅ `frontend/` 内で実行
@@ -35,8 +38,12 @@ jobs:
       - name: Copy artifact for deployment job
         run: |
           mkdir deploy
-          cp -r .next/standalone/* deploy/
-          cp -r .next/static deploy/.next/
+          if [ -d ".next/standalone" ]; then
+            cp -r .next/standalone/* deploy/
+          else
+            echo "⚠️ .next/standalone/ does not exist, skipping copy"
+          fi
+            cp -r .next/static deploy/.next/
 
       - name: Zip artifact for deployment
         run: zip release.zip ./deploy -r
