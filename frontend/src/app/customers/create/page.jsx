@@ -22,7 +22,7 @@ export default function CreatePage() {
                     <form ref={formRef} onSubmit={handleSubmit}>
                         <div className="card-body">
                             <h2 className="card-title">
-                                <p><input type="text" name="customer_name" placeholder="桃太郎" className="input input-bordered" required /></p>
+                                <p><input type="text" name="customer_name" placeholder="桃太郎" className="input input-bordered" required/></p>
                             </h2>
                             <p>Customer ID:<input type="text" name="customer_id" placeholder="C030" className="input input-bordered" required/></p>
                             <p>Age:<input type="number" name="age" placeholder="30" className="input input-bordered" required/></p>
