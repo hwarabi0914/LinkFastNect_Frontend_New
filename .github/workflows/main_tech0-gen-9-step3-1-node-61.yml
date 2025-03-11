@@ -36,23 +36,29 @@ jobs:
           npm run test --if-present
 
       - name: Copy artifact for deployment job
+        working-directory: frontend  # ✅ `frontend/` 内で実行
         run: |
-          mkdir deploy
+          mkdir -p deploy/.next/static
           if [ -d ".next/standalone" ]; then
             cp -r .next/standalone/* deploy/
           else
             echo "⚠️ .next/standalone/ does not exist, skipping copy"
           fi
-            cp -r .next/static deploy/.next/
+          if [ -d ".next/static" ]; then
+            cp -r .next/static/* deploy/.next/static/
+          else
+            echo "⚠️ .next/static does not exist, skipping copy"
+          fi
 
       - name: Zip artifact for deployment
-        run: zip release.zip ./deploy -r
+        working-directory: frontend  # ✅ `frontend/` 内で実行
+        run: zip -r release.zip deploy
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: release.zip
+          path: frontend/release.zip  # ✅ フロントエンドフォルダ内の `release.zip` をアップロード
 
   deploy:
     runs-on: ubuntu-latest
