@@ -1,8 +1,8 @@
-"use client"; // クライアントコンポーネントとして実行
+"use client";
 
-import { useEffect, useState } from "react";
-import OneCustomerInfoCard from "@/app/components/one_customer_info_card.jsx";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import OneCustomerInfoCard from "@/app/components/one_customer_info_card.jsx";
 
 async function fetchCustomer(id) {
   const res = await fetch(
@@ -14,9 +14,17 @@ async function fetchCustomer(id) {
   return res.json();
 }
 
-export default function ReadPage() {
+export default function CheckPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CustomerCheckContent />
+    </Suspense>
+  );
+}
+
+function CustomerCheckContent() {
   const searchParams = useSearchParams();
-  const customer_id = searchParams.get("customer_id"); // クエリパラメータを取得
+  const customer_id = searchParams.get("customer_id");
   const [customerInfo, setCustomerInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,7 +52,7 @@ export default function ReadPage() {
 
   return (
     <>
-      <div className="alert alert-success">更新しました</div>
+      <div className="alert alert-success">顧客情報を確認しました</div>
       <div className="card bordered bg-white border-blue-200 border-2 max-w-sm m-4">
         <OneCustomerInfoCard {...customerInfo} />
       </div>
