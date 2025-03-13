@@ -4,6 +4,8 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import OneCustomerInfoCard from "@/app/components/one_customer_info_card.jsx";
 
+export const dynamic = "force-dynamic"; // 🔄 "use client" の後に移動
+
 async function fetchCustomer(id) {
   const res = await fetch(
     process.env.NEXT_PUBLIC_API_ENDPOINT + `/customers?customer_id=${id}`
