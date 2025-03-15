@@ -84,3 +84,8 @@ jobs:
           slot-name: 'Production'
           package: ./deploy
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_3F3FE586D4F4411FB6D27E602AD2AC30 }}
+
+      - name: Start Next.js server
+        working-directory: frontend
+        run: |
+          npm start
