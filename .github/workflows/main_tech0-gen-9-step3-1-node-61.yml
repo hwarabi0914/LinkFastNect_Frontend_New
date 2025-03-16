@@ -16,10 +16,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Debug - Check root directory structure
-        run: ls -la # 🔍 デバッグ用にディレクトリの中身を出力
+        run: ls -la
 
       - name: Debug - Check frontend directory structure
-        run: ls -la frontend # 🔍 `frontend/` があるか確認
+        run: ls -la frontend
 
       - name: Set up Node.js version
         uses: actions/setup-node@v3
@@ -29,7 +29,8 @@ jobs:
       - name: Set environment variables
         run: |
           echo "NEXT_PUBLIC_API_ENDPOINT=${{ secrets.NEXT_PUBLIC_API_ENDPOINT }}" >> $GITHUB_ENV
-        # ✅ 環境変数を先に設定することで `next build` で適用される
+          echo "NEXT_PUBLIC_API_ENDPOINT=${{ secrets.NEXT_PUBLIC_API_ENDPOINT }}" >> frontend/.env.local
+          echo "✅ NEXT_PUBLIC_API_ENDPOINT set to: $NEXT_PUBLIC_API_ENDPOINT"
 
       - name: Install dependencies, build, and test
         working-directory: frontend
@@ -38,9 +39,10 @@ jobs:
           npm run build --if-present
           npm run test --if-present
 
-      - name: Debug - Check `.next/` directory structure
-        working-directory: frontend
-        run: ls -la .next # 🔍 `.next/` が正しく生成されているか確認
+      - name: Debug - Print environment variables
+        run: |
+          echo "NEXT_PUBLIC_API_ENDPOINT=${NEXT_PUBLIC_API_ENDPOINT}"
+          cat frontend/.env.local # ✅ `.env.local` の中身を確認
 
       - name: Copy artifact for deployment job
         working-directory: frontend
@@ -48,7 +50,6 @@ jobs:
           mkdir -p deploy/.next/static
           mkdir -p deploy/public
 
-          # `standalone` ディレクトリをコピー
           if [ -d ".next/standalone" ]; then
             cp -r .next/standalone/* deploy/
           else
@@ -56,7 +57,6 @@ jobs:
             exit 1
           fi
 
-          # `.next/static/` をデプロイに含める
           if [ -d ".next/static" ]; then
             cp -r .next/static deploy/.next/static/
           else
@@ -64,7 +64,6 @@ jobs:
             exit 1
           fi
           
-          # `public/` フォルダもコピー（画像・フォント用）
           if [ ! -d "public" ]; then
             echo "⚠️ public/ does not exist, creating empty directory"
             mkdir -p deploy/public
@@ -72,7 +71,6 @@ jobs:
             cp -r public deploy/
           fi
 
-          # `.env.local` をデプロイ
           if [ -f ".env.local" ]; then
             cp .env.local deploy/
           else
@@ -81,7 +79,7 @@ jobs:
 
       - name: Debug - Check deploy directory structure
         working-directory: frontend/deploy
-        run: ls -la # 🔍 デプロイフォルダの構成確認
+        run: ls -la
 
       - name: Zip artifact for deployment
         working-directory: frontend
