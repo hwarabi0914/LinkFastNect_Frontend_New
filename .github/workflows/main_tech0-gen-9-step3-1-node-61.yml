@@ -37,9 +37,9 @@ jobs:
         working-directory: frontend
         run: |
           mkdir -p deploy/.next/static
-          mkdir -p deploy/public  # 👈 `public/` もデプロイ対象に追加
-          mkdir -p deploy/.env  # 👈 `.env.local` をデプロイ対象に追加
-          
+          mkdir -p deploy/public
+          mkdir -p deploy/.env
+
           # `standalone` ディレクトリをコピー
           if [ -d ".next/standalone" ]; then
             cp -r .next/standalone/* deploy/
@@ -49,14 +49,14 @@ jobs:
 
           # `.next/static/` をデプロイに含める
           if [ -d ".next/static" ]; then
-            cp -r .next/static/* deploy/.next/static/
+            cp -r .next/static deploy/.next/static/
           else
             echo "⚠️ .next/static does not exist, skipping copy"
           fi
           
           # `public/` フォルダもコピー（画像・フォント用）
           if [ -d "public" ]; then
-            cp -r public/* deploy/public/
+            cp -r public deploy/
           else
             echo "⚠️ public/ does not exist, skipping copy"
           fi
