@@ -26,6 +26,11 @@ jobs:
         with:
           node-version: '20.x'
       
+      - name: Set environment variables
+        run: |
+          echo "NEXT_PUBLIC_API_ENDPOINT=${{ secrets.NEXT_PUBLIC_API_ENDPOINT }}" >> $GITHUB_ENV
+        # ✅ 環境変数を先に設定することで `next build` で適用される
+
       - name: Install dependencies, build, and test
         working-directory: frontend
         run: |
@@ -33,32 +38,38 @@ jobs:
           npm run build --if-present
           npm run test --if-present
 
+      - name: Debug - Check `.next/` directory structure
+        working-directory: frontend
+        run: ls -la .next # 🔍 `.next/` が正しく生成されているか確認
+
       - name: Copy artifact for deployment job
         working-directory: frontend
         run: |
           mkdir -p deploy/.next/static
           mkdir -p deploy/public
-          mkdir -p deploy/.env
 
           # `standalone` ディレクトリをコピー
           if [ -d ".next/standalone" ]; then
             cp -r .next/standalone/* deploy/
           else
-            echo "⚠️ .next/standalone/ does not exist, skipping copy"
+            echo "❌ ERROR: .next/standalone does not exist!"
+            exit 1
           fi
 
           # `.next/static/` をデプロイに含める
           if [ -d ".next/static" ]; then
             cp -r .next/static deploy/.next/static/
           else
-            echo "⚠️ .next/static does not exist, skipping copy"
+            echo "❌ ERROR: .next/static does not exist!"
+            exit 1
           fi
           
           # `public/` フォルダもコピー（画像・フォント用）
-          if [ -d "public" ]; then
-            cp -r public deploy/
+          if [ ! -d "public" ]; then
+            echo "⚠️ public/ does not exist, creating empty directory"
+            mkdir -p deploy/public
           else
-            echo "⚠️ public/ does not exist, skipping copy"
+            cp -r public deploy/
           fi
 
           # `.env.local` をデプロイ
@@ -100,6 +111,9 @@ jobs:
       
       - name: Debug - Check deployed files
         run: ls -la deploy
+
+      - name: Debug - Check deployed `.next/static` directory
+        run: ls -la deploy/.next/static
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
