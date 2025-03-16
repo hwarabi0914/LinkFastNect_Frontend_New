@@ -33,16 +33,13 @@ jobs:
           npm run build --if-present
           npm run test --if-present
 
-      - name: Debug - Check .next structure after build
-        working-directory: frontend
-        run: ls -la .next # 🔍 ビルド後の .next の中身を確認
-
       - name: Copy artifact for deployment job
         working-directory: frontend
         run: |
           mkdir -p deploy/.next/static
-          mkdir -p deploy/public  # ✅ `public/` もデプロイ対象に追加
-
+          mkdir -p deploy/public  # 👈 `public/` もデプロイ対象に追加
+          mkdir -p deploy/.env  # 👈 `.env.local` をデプロイ対象に追加
+          
           # `standalone` ディレクトリをコピー
           if [ -d ".next/standalone" ]; then
             cp -r .next/standalone/* deploy/
@@ -52,21 +49,28 @@ jobs:
 
           # `.next/static/` をデプロイに含める
           if [ -d ".next/static" ]; then
-            cp -r .next/static deploy/.next/
+            cp -r .next/static/* deploy/.next/static/
           else
             echo "⚠️ .next/static does not exist, skipping copy"
           fi
           
           # `public/` フォルダもコピー（画像・フォント用）
           if [ -d "public" ]; then
-            cp -r public deploy/
+            cp -r public/* deploy/public/
           else
             echo "⚠️ public/ does not exist, skipping copy"
           fi
 
-      - name: Debug - Check deploy folder structure
-        working-directory: frontend
-        run: ls -la deploy # 🔍 `deploy/` フォルダの中身を確認
+          # `.env.local` をデプロイ
+          if [ -f ".env.local" ]; then
+            cp .env.local deploy/
+          else
+            echo "⚠️ .env.local does not exist, skipping copy"
+          fi
+
+      - name: Debug - Check deploy directory structure
+        working-directory: frontend/deploy
+        run: ls -la # 🔍 デプロイフォルダの構成確認
 
       - name: Zip artifact for deployment
         working-directory: frontend
@@ -94,8 +98,8 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
       
-      - name: Debug - Check deploy folder structure before deployment
-        run: ls -la ./deploy # 🔍 `deploy/` フォルダの中身を確認
+      - name: Debug - Check deployed files
+        run: ls -la deploy
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
