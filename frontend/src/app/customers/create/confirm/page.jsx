@@ -14,19 +14,30 @@ export default function ConfirmPage() {
 
 function ConfirmComponent() {
   const router = useRouter();
-  const searchParams = useSearchParams(); // Suspense内で実行
+  const searchParams = useSearchParams();
   const customer_id = searchParams.get("customer_id");
   const [customer, setCustomer] = useState(null);
+
+  console.log("🔍 customer_id:", customer_id); // 🚀 customer_id をログに出力
 
   useEffect(() => {
     const fetchAndSetCustomer = async () => {
       if (customer_id) {
-        const customerData = await fetchCustomer(customer_id);
-        setCustomer(customerData);
+        console.log("🚀 Calling fetchCustomer with ID:", customer_id); // ✅ fetchCustomer が呼ばれるか確認
+        try {
+          const customerData = await fetchCustomer(customer_id);
+          console.log("✅ Fetch successful, data:", customerData); // ✅ APIのレスポンスを表示
+          setCustomer(customerData);
+        } catch (error) {
+          console.error("❌ Fetch failed:", error); // ❌ エラーが発生した場合
+        }
+      } else {
+        console.warn("⚠️ No customer_id found!"); // ⚠️ customer_id がない場合の警告
       }
     };
+
     fetchAndSetCustomer();
-  }, [customer_id]); // customer_idが変更されたときに再実行
+  }, [customer_id]);
 
   return (
     <div className="card bordered bg-white border-blue-200 border-2 max-w-sm m-4">
